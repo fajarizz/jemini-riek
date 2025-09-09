@@ -1,9 +1,9 @@
 import * as React from "react"
-import { Send } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { useSidebar } from "@/components/ui/sidebar"
+import {Send} from "lucide-react"
+import {cn} from "@/lib/utils"
+import {Input} from "@/components/ui/input"
+import {Button} from "@/components/ui/button"
+import {useSidebar} from "@/components/ui/sidebar"
 
 export interface PromptBarProps {
   className?: string
@@ -64,7 +64,7 @@ export function PromptBar({
               aria-label="Send message"
               title="Send"
             >
-              <Send className="size-4" />
+              <Send className="size-4"/>
             </Button>
           </div>
         </form>
@@ -75,5 +75,3 @@ export function PromptBar({
     </div>
   )
 }
-
-export default PromptBar
