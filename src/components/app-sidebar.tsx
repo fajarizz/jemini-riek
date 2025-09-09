@@ -1,4 +1,4 @@
-import { Search, Plus, User } from "lucide-react"
+import {Search, Plus, User} from "lucide-react"
 
 import {
     Sidebar,
@@ -6,17 +6,17 @@ import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useChat } from "@/state/chat-store"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {useChat} from "@/state/chat-store"
 import * as React from "react"
+import {Card, CardContent} from "@/components/ui/card"
 
 export function AppSidebar() {
-    const { chats, activeChatId, draft, selectChat, newDraft } = useChat()
+    const {chats, activeChatId, draft, selectChat, newDraft} = useChat()
     const [query, setQuery] = React.useState("")
 
     const filtered = React.useMemo(() => {
@@ -31,19 +31,21 @@ export function AppSidebar() {
                 <div className="flex h-full flex-col">
                     {/* Top: Trigger + New Chat + Search */}
                     <SidebarGroup>
-                        <div className="flex items-center gap-2 px-2 py-2 text-xs font-medium text-sidebar-foreground/70">
-                            <SidebarTrigger />
+                        <div
+                            className="flex items-center gap-2 px-2 py-2 text-xs font-medium text-sidebar-foreground/70">
+                            <SidebarTrigger/>
                             <span>Chats</span>
                         </div>
                         <SidebarGroupContent>
                             <div className="flex items-center gap-2 p-2">
                                 <Button className="w-full" onClick={() => newDraft()}>
-                                    <Plus className="mr-2 size-4" /> New chat
+                                    <Plus className="mr-2 size-4"/> New chat
                                 </Button>
                             </div>
                             <div className="p-2 pt-0">
                                 <div className="relative">
-                                    <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search
+                                        className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"/>
                                     <Input
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
@@ -62,16 +64,21 @@ export function AppSidebar() {
                                 {filtered.length === 0 && (
                                     <div className="text-muted-foreground px-4 py-6 text-sm">No chats yet.</div>
                                 )}
-                                {filtered.map((chat) => (
-                                    <SidebarMenuItem key={chat.id}>
-                                        <SidebarMenuButton
-                                            onClick={() => selectChat(chat.id)}
-                                            isActive={!draft && activeChatId === chat.id}
-                                        >
-                                            <span className="truncate">{chat.title}</span>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
+                                {filtered.map((chat) => {
+                                    const active = !draft && activeChatId === chat.id
+                                    return (
+                                        <SidebarMenuItem key={chat.id}>
+                                            <Button
+                                                onClick={() => selectChat(chat.id)}
+                                                variant={active ? "secondary" : "tertiary"}
+                                                size="sm"
+                                                className="w-full justify-start text-left"
+                                            >
+                                                <span className="truncate">{chat.title}</span>
+                                            </Button>
+                                        </SidebarMenuItem>
+                                    )
+                                })}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -79,15 +86,21 @@ export function AppSidebar() {
                     {/* Bottom: Profile */}
                     <SidebarGroup className="mt-auto">
                         <SidebarGroupContent>
-                            <div className="flex items-center gap-3 p-3">
-                                <div className="size-8 rounded-full border bg-muted text-foreground/80 flex items-center justify-center">
-                                    <User className="size-4" />
-                                </div>
-                                <div className="min-w-0 flex flex-col items-start justify-start">
-                                    <div className="truncate text-sm font-medium">Your Name</div>
-                                    <div className="truncate text-xs text-muted-foreground">you@example.com</div>
-                                </div>
-                            </div>
+                            <Card className="m-2">
+                                <CardContent className="p-3">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="size-8 rounded-full border bg-muted text-foreground/80 flex items-center justify-center">
+                                            <User className="size-4"/>
+                                        </div>
+                                        <div className="min-w-0 flex flex-col items-start justify-start">
+                                            <div className="truncate text-sm font-medium">Your Name</div>
+                                            <div className="truncate text-xs text-muted-foreground">you@example.com
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </SidebarGroupContent>
                     </SidebarGroup>
                 </div>

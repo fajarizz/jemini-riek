@@ -24,7 +24,8 @@ function App() {
                         <div key={m.id} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
                             <div className="flex max-w-[85%] items-start gap-3">
                                 {m.role === 'assistant' && (
-                                    <div className="size-8 shrink-0 rounded-full border bg-muted flex items-center justify-center">
+                                    <div
+                                        className="size-8 shrink-0 rounded-full border bg-muted flex items-center justify-center">
                                         <Bot className="size-4"/>
                                     </div>
                                 )}
@@ -36,7 +37,8 @@ function App() {
                                     <p className="whitespace-pre-wrap text-sm leading-6">{m.content}</p>
                                 </div>
                                 {m.role === 'user' && (
-                                    <div className="size-8 shrink-0 rounded-full border bg-muted flex items-center justify-center">
+                                    <div
+                                        className="size-8 shrink-0 rounded-full border bg-muted flex items-center justify-center">
                                         <User className="size-4"/>
                                     </div>
                                 )}
