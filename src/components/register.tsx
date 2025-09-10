@@ -9,20 +9,48 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { FormEvent } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import type { FormEvent } from "react"
+import { useState } from "react"
+import { useNavigate, Link, useLocation } from "react-router-dom"
+import { signupRequest, storeAuth } from "@/lib/api"
 
 export function RegisterForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
     const navigate = useNavigate()
+    const location = useLocation()
+    const from = (location.state as any)?.from || "/"
 
-    function onSubmit(e: FormEvent) {
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault()
-        // Simulated registration then auth
-        localStorage.setItem("isAuthed", "true")
-        navigate("/")
+        setError(null)
+        const formData = new FormData(e.currentTarget)
+        const email = String(formData.get("email") || "")
+        const password = String(formData.get("password") || "")
+        const confirm = String(formData.get("confirmPassword") || "")
+        if (password !== confirm) {
+            setError("Passwords do not match")
+            return
+        }
+        if (!email || !password) return
+        try {
+            setLoading(true)
+            const data = await signupRequest(email, password)
+            storeAuth(data)
+            navigate(from, { replace: true })
+        } catch (err: any) {
+            const msg =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Signup failed"
+            setError(msg)
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -35,33 +63,60 @@ export function RegisterForm({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={onSubmit}>
+                    <form onSubmit={onSubmit} noValidate>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-3">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
+                                    name="email"
                                     type="email"
                                     placeholder="m@example.com"
                                     required
+                                    autoComplete="email"
+                                    disabled={loading}
                                 />
                             </div>
                             <div className="grid gap-3">
                                 <Label htmlFor="password">Password</Label>
-                                <Input id="password" type="password" required />
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    required
+                                    autoComplete="new-password"
+                                    disabled={loading}
+                                />
                             </div>
                             <div className="grid gap-3">
                                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                                <Input id="confirmPassword" type="password" required />
+                                <Input
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    type="password"
+                                    required
+                                    autoComplete="new-password"
+                                    disabled={loading}
+                                />
                             </div>
+                            {error && (
+                                <div className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2">
+                                    {error}
+                                </div>
+                            )}
                             <div className="flex flex-col gap-3">
-                                <Button type="submit" className="w-full">
-                                    Sign Up
+                                <Button
+                                    type="submit"
+                                    className="w-full"
+                                    disabled={loading}
+                                >
+                                    {loading ? "Signing up..." : "Sign Up"}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     className="w-full"
+                                    disabled={loading}
                                 >
                                     Sign up with Google
                                 </Button>
@@ -69,7 +124,10 @@ export function RegisterForm({
                         </div>
                         <div className="mt-4 text-center text-sm">
                             Already have an account?{" "}
-                            <Link to="/login" className="underline underline-offset-4">
+                            <Link
+                                to="/login"
+                                className="underline underline-offset-4"
+                            >
                                 Sign in
                             </Link>
                         </div>
@@ -79,4 +137,3 @@ export function RegisterForm({
         </div>
     )
 }
-

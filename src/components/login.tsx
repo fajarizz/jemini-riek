@@ -9,20 +9,40 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { FormEvent } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import type {FormEvent} from "react"
+import { useNavigate, Link, useLocation } from "react-router-dom"
+import {useState} from 'react'
+import {loginRequest, storeAuth} from '@/lib/api'
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
     const navigate = useNavigate()
+    const location = useLocation()
+    const from = (location.state as any)?.from || '/'
 
-    function onSubmit(e: FormEvent) {
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault()
-        // Very naive auth simulation
-        localStorage.setItem("isAuthed", "true")
-        navigate("/")
+        setError(null)
+        const formData = new FormData(e.currentTarget)
+        const email = String(formData.get('email') || '')
+        const password = String(formData.get('password') || '')
+        if (!email || !password) return
+        try {
+            setLoading(true)
+            const data = await loginRequest(email, password)
+            storeAuth(data)
+            navigate(from, {replace: true})
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || err?.message || 'Login failed'
+            setError(msg)
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -35,15 +55,18 @@ export function LoginForm({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={onSubmit}>
+                    <form onSubmit={onSubmit} noValidate>
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-3">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
+                                    name="email"
                                     type="email"
                                     placeholder="m@example.com"
                                     required
+                                    autoComplete="email"
+                                    disabled={loading}
                                 />
                             </div>
                             <div className="grid gap-3">
@@ -56,16 +79,22 @@ export function LoginForm({
                                         Forgot your password?
                                     </a>
                                 </div>
-                                <Input id="password" type="password" required />
+                                <Input id="password" name="password" type="password" required autoComplete="current-password" disabled={loading} />
                             </div>
+                            {error && (
+                                <div className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2">
+                                    {error}
+                                </div>
+                            )}
                             <div className="flex flex-col gap-3">
-                                <Button type="submit" className="w-full">
-                                    Login
+                                <Button type="submit" className="w-full" disabled={loading}>
+                                    {loading ? 'Logging in...' : 'Login'}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     className="w-full"
+                                    disabled={loading}
                                 >
                                     Login with Google
                                 </Button>

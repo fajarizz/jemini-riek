@@ -14,10 +14,18 @@ import {Input} from "@/components/ui/input"
 import {useChat} from "@/state/chat-store"
 import * as React from "react"
 import {Card, CardContent} from "@/components/ui/card"
+import {clearAuth} from "@/lib/api"
+import {useNavigate} from "react-router-dom"
 
 export function AppSidebar() {
     const {chats, activeChatId, draft, selectChat, newDraft} = useChat()
     const [query, setQuery] = React.useState("")
+    const navigate = useNavigate()
+
+    function handleLogout() {
+        clearAuth()
+        navigate('/login', {replace: true})
+    }
 
     const filtered = React.useMemo(() => {
         const q = query.trim().toLowerCase()
@@ -88,9 +96,8 @@ export function AppSidebar() {
                         <SidebarGroupContent>
                             <Card className="m-2">
                                 <CardContent className="p-3">
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="size-8 rounded-full border bg-muted text-foreground/80 flex items-center justify-center">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="size-8 rounded-full border bg-muted text-foreground/80 flex items-center justify-center">
                                             <User className="size-4"/>
                                         </div>
                                         <div className="min-w-0 flex flex-col items-start justify-start">
@@ -99,6 +106,9 @@ export function AppSidebar() {
                                             </div>
                                         </div>
                                     </div>
+                                    <Button variant="destructive" size="sm" className="w-full" onClick={handleLogout}>
+                                        Logout
+                                    </Button>
                                 </CardContent>
                             </Card>
                         </SidebarGroupContent>
