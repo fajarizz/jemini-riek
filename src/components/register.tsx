@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import {cn} from "@/lib/utils"
+import {Button} from "@/components/ui/button"
 import {
     Card,
     CardContent,
@@ -7,17 +7,16 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import type { FormEvent } from "react"
-import { useState } from "react"
-import { useNavigate, Link, useLocation } from "react-router-dom"
-import { signupRequest, storeAuth } from "@/lib/api"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import type {FormEvent} from "react"
+import {useState} from "react"
+import {useNavigate, Link, useLocation} from "react-router-dom"
 
 export function RegisterForm({
-    className,
-    ...props
-}: React.ComponentProps<"div">) {
+                                 className,
+                                 ...props
+                             }: React.ComponentProps<"div">) {
     const navigate = useNavigate()
     const location = useLocation()
     const from = (location.state as any)?.from || "/"
@@ -31,17 +30,10 @@ export function RegisterForm({
         const formData = new FormData(e.currentTarget)
         const email = String(formData.get("email") || "")
         const password = String(formData.get("password") || "")
-        const confirm = String(formData.get("confirmPassword") || "")
-        if (password !== confirm) {
-            setError("Passwords do not match")
-            return
-        }
         if (!email || !password) return
         try {
             setLoading(true)
-            const data = await signupRequest(email, password)
-            storeAuth(data)
-            navigate(from, { replace: true })
+            navigate(from, {replace: true})
         } catch (err: any) {
             const msg =
                 err?.response?.data?.message ||
@@ -59,12 +51,23 @@ export function RegisterForm({
                 <CardHeader>
                     <CardTitle>Create an account</CardTitle>
                     <CardDescription>
-                        Enter your email and password to sign up
+                        Enter a username, your email and password to sign up
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={onSubmit} noValidate>
                         <div className="flex flex-col gap-6">
+                            <div className="grid gap-3">
+                                <Label htmlFor="username">Username</Label>
+                                <Input
+                                    id="username"
+                                    name="username"
+                                    type="text"
+                                    placeholder="yourname"
+                                    autoComplete="nickname"
+                                    disabled={loading}
+                                />
+                            </div>
                             <div className="grid gap-3">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
@@ -88,19 +91,9 @@ export function RegisterForm({
                                     disabled={loading}
                                 />
                             </div>
-                            <div className="grid gap-3">
-                                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                                <Input
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    type="password"
-                                    required
-                                    autoComplete="new-password"
-                                    disabled={loading}
-                                />
-                            </div>
                             {error && (
-                                <div className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2">
+                                <div
+                                    className="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2">
                                     {error}
                                 </div>
                             )}

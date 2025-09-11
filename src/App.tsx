@@ -6,6 +6,7 @@ import './App.css'
 
 function App() {
     const {activeMessages, sendMessage} = useChat()
+    const { isSending } = useChat()
 
     const bottomRef = useRef<HTMLDivElement | null>(null)
 
@@ -53,9 +54,15 @@ function App() {
                 <div ref={bottomRef}/>
             </div>
 
-            <PromptBar onSubmit={sendMessage}/>
+            <PromptBar onSubmit={sendMessage} disabled={isSending}/>
         </div>
     )
 }
 
 export default App
+
+
+
+
+
+

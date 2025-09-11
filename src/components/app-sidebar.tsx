@@ -14,13 +14,34 @@ import {Input} from "@/components/ui/input"
 import {useChat} from "@/state/chat-store"
 import * as React from "react"
 import {Card, CardContent} from "@/components/ui/card"
-import {clearAuth} from "@/lib/api"
+import {clearAuth, fetchProfileMe} from "@/lib/api"
 import {useNavigate} from "react-router-dom"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function AppSidebar() {
-    const {chats, activeChatId, draft, selectChat, newDraft} = useChat()
+    const {chats, activeChatId, draft, selectChat, newDraft, isConversationsLoading} = useChat()
     const [query, setQuery] = React.useState("")
     const navigate = useNavigate()
+
+    const [profileName, setProfileName] = React.useState<string>("Your Name")
+    const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null)
+
+    React.useEffect(() => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+        if (!token) return
+        let cancelled = false
+        ;(async () => {
+            try {
+                const p = await fetchProfileMe()
+                if (cancelled) return
+                setProfileName(p.displayName || "Your Name")
+                setAvatarUrl(p.avatarUrl)
+            } catch {
+                // ignore profile errors
+            }
+        })()
+        return () => { cancelled = true }
+    }, [])
 
     function handleLogout() {
         clearAuth()
@@ -69,24 +90,31 @@ export function AppSidebar() {
                     <SidebarGroup className="flex-1 overflow-auto">
                         <SidebarGroupContent>
                             <SidebarMenu>
-                                {filtered.length === 0 && (
-                                    <div className="text-muted-foreground px-4 py-6 text-sm">No chats yet.</div>
-                                )}
-                                {filtered.map((chat) => {
-                                    const active = !draft && activeChatId === chat.id
-                                    return (
-                                        <SidebarMenuItem key={chat.id}>
-                                            <Button
-                                                onClick={() => selectChat(chat.id)}
-                                                variant={active ? "secondary" : "tertiary"}
-                                                size="sm"
-                                                className="w-full justify-start text-left"
-                                            >
-                                                <span className="truncate">{chat.title}</span>
-                                            </Button>
+                                {isConversationsLoading ? (
+                                    Array.from({ length: 6 }).map((_, i) => (
+                                        <SidebarMenuItem key={`sk-${i}`}>
+                                            <Skeleton className="h-8 w-full" />
                                         </SidebarMenuItem>
-                                    )
-                                })}
+                                    ))
+                                ) : filtered.length === 0 ? (
+                                    <div className="text-muted-foreground px-4 py-6 text-sm">No chats yet.</div>
+                                ) : (
+                                    filtered.map((chat) => {
+                                        const active = !draft && activeChatId === chat.id
+                                        return (
+                                            <SidebarMenuItem key={chat.id}>
+                                                <Button
+                                                    onClick={() => selectChat(chat.id)}
+                                                    variant={active ? "secondary" : "tertiary"}
+                                                    size="sm"
+                                                    className="w-full justify-start text-left"
+                                                >
+                                                    <span className="truncate">{chat.title}</span>
+                                                </Button>
+                                            </SidebarMenuItem>
+                                        )
+                                    })
+                                )}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -97,13 +125,15 @@ export function AppSidebar() {
                             <Card className="m-2">
                                 <CardContent className="p-3">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="size-8 rounded-full border bg-muted text-foreground/80 flex items-center justify-center">
-                                            <User className="size-4"/>
-                                        </div>
-                                        <div className="min-w-0 flex flex-col items-start justify-start">
-                                            <div className="truncate text-sm font-medium">Your Name</div>
-                                            <div className="truncate text-xs text-muted-foreground">you@example.com
+                                        {avatarUrl ? (
+                                            <img src={avatarUrl} alt={profileName} className="size-8 rounded-full border object-cover" />
+                                        ) : (
+                                            <div className="size-8 rounded-full border bg-muted text-foreground/80 flex items-center justify-center">
+                                                <User className="size-4"/>
                                             </div>
+                                        )}
+                                        <div className="min-w-0 flex flex-col items-start justify-start">
+                                            <div className="truncate text-sm font-medium">{profileName}</div>
                                         </div>
                                     </div>
                                     <Button variant="destructive" size="sm" className="w-full" onClick={handleLogout}>
